@@ -10,6 +10,9 @@ on:
 #   pull_request:
 #     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -44,6 +47,11 @@ jobs:
       CLUSTER_LOCATION_DEFAULT: us-central1-c
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
       - name: 'Setup env vars'
         run: |
           echo "PROJECT_ID=${PROJECT_ID_OVERRIDE:-${PROJECT_ID_DEFAULT}}" >> $GITHUB_ENV
@@ -103,7 +111,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       
       - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
-      - uses: chainguard-dev/actions/setup-gitsign@main
+      - uses: chainguard-dev/actions/setup-gitsign@7d40b853210d271a28ac2822827f965f6f1e78fa # main
       - uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # main
         if: env.ENABLE_SIGNING == 'true'
         with:
