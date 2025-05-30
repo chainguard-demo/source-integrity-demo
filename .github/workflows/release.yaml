@@ -10,6 +10,8 @@ on:
 #   pull_request:
 #     branches: [ "main" ]
 
+permissions: {}
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -44,6 +46,11 @@ jobs:
       CLUSTER_LOCATION_DEFAULT: us-central1-c
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
       - name: 'Setup env vars'
         run: |
           echo "PROJECT_ID=${PROJECT_ID_OVERRIDE:-${PROJECT_ID_DEFAULT}}" >> $GITHUB_ENV
@@ -59,7 +66,7 @@ jobs:
         uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
     
       - name: 'auth'
-        uses: 'google-github-actions/auth@3a3c4c57d294ef65efaaee4ff17b22fa88dd3c69 # v1.3.0'
+        uses: step-security/google-github-auth@40f6deebd366f16c782d7a0ad0844e3b96a032a6 # v2.1.10
         with:
           token_format: 'access_token'
           # Default is to generate a key file, which is automatically configured for use with gcloud.
@@ -103,7 +110,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       
       - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
-      - uses: chainguard-dev/actions/setup-gitsign@main
+      - uses: chainguard-dev/actions/setup-gitsign@5363dd9eb48083bbf7674a4bbe62d71c3b230edd # main
       - uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # main
         if: env.ENABLE_SIGNING == 'true'
         with:
